@@ -35,7 +35,7 @@ def analyze_pdf_with_summary(pdf_path):
 {text[:6000]}
 """
     resp = client.messages.create(
-        model="claude-3-haiku-latest",
+        model="claude-3-haiku-20240307",
         max_tokens=500,
         messages=[{"role": "user", "content": prompt}]
     )
