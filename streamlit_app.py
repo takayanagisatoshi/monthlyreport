@@ -539,7 +539,7 @@ def main():
             # レポート生成
             st.markdown("---")
             if st.button("📄 レポート生成", type="primary"):
-                html_report = generate_simple_html_report(
+                html_report = generate_original_style_html_report(
                     processed_data, report_month, property_name, client_name, analysis_results
                 )
                 
@@ -548,7 +548,8 @@ def main():
                 href = f'<a href="data:text/html;base64,{b64}" download="{filename}">📄 レポートダウンロード</a>'
                 st.markdown(href, unsafe_allow_html=True)
                 
-                st.components.v1.html(html_report, height=600)
+                st.subheader("📋 元のデザインで生成されたレポート")
+                st.components.v1.html(html_report, height=800, scrolling=True)
 
 if __name__ == "__main__":
     main()
