@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import pdfplumber
 from anthropic import Anthropic
-import tempfile, base64
+import tempfile
 
 # ===== サイドバーで APIキー入力 =====
 st.sidebar.header("🔑 API設定")
@@ -35,7 +35,7 @@ def analyze_pdf_with_summary(pdf_path):
 {text[:6000]}
 """
     resp = client.messages.create(
-        model="claude-3-haiku-20240307",
+        model="claude-3-haiku-20240307",  # haikuで十分
         max_tokens=500,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -49,14 +49,36 @@ def analyze_pdf_with_summary(pdf_path):
             summary = line.replace("概要:", "").strip()
     return has_issue, summary
 
-# ===== PDFリンク生成関数 =====
-def make_download_link(uploaded_file):
-    data = uploaded_file.read()
-    b64 = base64.b64encode(data).decode()
-    href = f'<a href="data:application/pdf;base64,{b64}" download="{uploaded_file.name}">📥 {uploaded_file.name}</a>'
-    return href
+# ===== CSS =====
+st.markdown("""
+<style>
+.card {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  font-size: 18px;
+  margin: 5px;
+}
+.card b { font-size: 24px; }
+table.dataframe {
+  border-collapse: collapse;
+  width: 100%;
+}
+table.dataframe th {
+  background: #495057;
+  color: white;
+  padding: 6px;
+}
+table.dataframe td {
+  padding: 6px;
+  border: 1px solid #ddd;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# ===== アップロード =====
+# ===== ファイルアップロード =====
 st.title("📊 グリーンオーク茅場町 月次報告書")
 
 uploaded_csv = st.file_uploader("📂 点検チケットCSVをアップロード", type="csv")
@@ -65,39 +87,56 @@ uploaded_pdfs = st.file_uploader("📂 PDF報告書をアップロード（複�
 if uploaded_csv is not None:
     tickets = pd.read_csv(uploaded_csv)
 
+    # PDF解析
     pdf_results = {}
     if uploaded_pdfs:
         for pdf in uploaded_pdfs:
-            # 一時ファイルに保存して解析
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                tmp.write(pdf.getvalue())
+                tmp.write(pdf.read())
                 pdf_path = tmp.name
             has_issue, summary = analyze_pdf_with_summary(pdf_path)
+            pdf_results[pdf.name] = {"有無": has_issue, "概要": summary}
 
-            # リンク生成
-            link = make_download_link(pdf)
-
-            pdf_results[pdf.name] = {"有無": has_issue, "概要": summary, "リンク": link}
-
-    # CSVに「指摘有無」「指摘内容」「ダウンロード」列を追加
+    # CSVに追加
     tickets["指摘有無"] = tickets["対象ファイル"].map(lambda x: pdf_results.get(x, {}).get("有無", "不明"))
     tickets["指摘内容"] = tickets["対象ファイル"].map(lambda x: pdf_results.get(x, {}).get("概要", ""))
-    tickets["ダウンロード"] = tickets["対象ファイル"].map(lambda x: pdf_results.get(x, {}).get("リンク", ""))
 
-    # ===== サマリー =====
-    st.metric("総作業件数", len(tickets))
-    st.metric("指摘事項あり", (tickets["指摘有無"] == "指摘あり").sum())
-    st.metric("指摘事項なし", (tickets["指摘有無"] == "指摘なし").sum())
-    st.metric("担当業者数", tickets["担当会社"].nunique())
+    # ===== サマリーカード =====
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f"<div class='card'>総業務数<br><b>{len(tickets)}件</b></div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"<div class='card'>指摘事項あり<br><b>{(tickets['指摘有無']=='指摘あり').sum()}件</b></div>", unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"<div class='card'>指摘事項なし<br><b>{(tickets['指摘有無']=='指摘なし').sum()}件</b></div>", unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"<div class='card'>担当業者数<br><b>{tickets['担当会社'].nunique()}社</b></div>", unsafe_allow_html=True)
 
-    # 一覧テーブル（リンクを有効化）
-    st.write("### 点検チケット一覧")
-    st.write(tickets.to_html(escape=False, index=False), unsafe_allow_html=True)
+    # ===== 点検表（色付け） =====
+    def highlight(row):
+        if row["指摘有無"] == "指摘あり":
+            return ["background-color: #f8d7da"] * len(row)
+        elif "対応中" in str(row.get("是正状況", "")):
+            return ["background-color: #fff3cd"] * len(row)
+        return [""] * len(row)
+
+    styled_df = tickets[["日付","担当会社","対象ファイル","指摘有無","指摘内容","是正状況"]].style.apply(highlight, axis=1)
+    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
     # ===== HTMLダウンロード =====
-    html_content = tickets.to_html(escape=False, index=False)
+    html_content = f"""
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body>
+    <h1>グリーンオーク茅場町 月次報告書</h1>
+    {styled_df.to_html(escape=False)}
+    </body>
+    </html>
+    """
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as f:
         f.write(html_content.encode("utf-8"))
         tmpfile = f.name
+
     with open(tmpfile, "rb") as f:
         st.download_button("📥 HTMLダウンロード", f, file_name="monthly_report.html")
