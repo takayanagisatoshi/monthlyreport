@@ -129,11 +129,36 @@ def analyze_text_with_anthropic_safe(text, filename, api_key):
 日本語で回答してください。
 """
         
-        response = client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=3000,
-            messages=[{"role": "user", "content": analysis_prompt}]
-        )
+        # 利用可能なモデルを順番に試す
+        models_to_try = [
+            "claude-3-5-sonnet-20241022",  # 最新Sonnet
+            "claude-3-5-sonnet-20240620",  # Claude 3.5 Sonnet
+            "claude-3-sonnet-20240229",    # Claude 3 Sonnet
+            "claude-3-haiku-20240307"      # より軽量なモデル
+        ]
+        
+        response = None
+        used_model = None
+        
+        for model in models_to_try:
+            try:
+                response = client.messages.create(
+                    model=model,
+                    max_tokens=3000,
+                    messages=[{"role": "user", "content": analysis_prompt}]
+                )
+                used_model = model
+                break
+            except Exception as model_error:
+                if "not_found" in str(model_error) or "404" in str(model_error):
+                    continue  # 次のモデルを試す
+                else:
+                    raise model_error  # その他のエラーは再発生
+        
+        if response is None:
+            raise Exception("利用可能なClaude モデルが見つかりません。API KEYの権限を確認してください。")
+        
+        st.info(f"使用モデル: {used_model}")
         
         response_text = response.content[0].text
         
