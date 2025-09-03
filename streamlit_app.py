@@ -11,7 +11,7 @@ if api_key:
     st.session_state["api_key"] = api_key
 
 # ===== Claude呼び出し関数 =====
-def analyze_pdf_with_summary(pdf_path):
+def analyze_pdf_with_details(pdf_path):
     text = ""
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
@@ -19,35 +19,40 @@ def analyze_pdf_with_summary(pdf_path):
             if t:
                 text += t + "\n"
     if not text.strip():
-        return "不明", "テキスト抽出できず"
+        return "不明", "テキスト抽出できず", "不明"
 
     client = Anthropic(api_key=st.session_state["api_key"])
     prompt = f"""
 以下は設備点検報告書のテキストです。
+次の3つを必ず抽出してください：
 
-1. 指摘事項がある場合は「指摘あり」／問題がなければ「指摘なし」
-2. 指摘がある場合はその内容を2〜3行で要約
+1. 指摘有無 → 「指摘あり」または「指摘なし」
+2. 指摘内容 → 2〜3行で要約（指摘なしの場合は「特になし」）
+3. 是正状況 → 「完了」「対応中」「予定」「不明」など
 
-次の形式で出力してください：
+出力フォーマットは必ず以下にしてください：
 有無: ○○
 概要: ○○
+是正状況: ○○
 ---
 {text[:6000]}
 """
     resp = client.messages.create(
-        model="claude-3-haiku-20240307",  # haikuで十分
+        model="claude-3-sonnet-20240229",  # ← sonnetを利用
         max_tokens=500,
         messages=[{"role": "user", "content": prompt}]
     )
     output = resp.content[0].text.strip()
 
-    has_issue, summary = "不明", ""
+    has_issue, summary, status = "不明", "", "不明"
     for line in output.splitlines():
         if line.startswith("有無:"):
             has_issue = line.replace("有無:", "").strip()
         if line.startswith("概要:"):
             summary = line.replace("概要:", "").strip()
-    return has_issue, summary
+        if line.startswith("是正状況:"):
+            status = line.replace("是正状況:", "").strip()
+    return has_issue, summary, status
 
 # ===== CSS =====
 st.markdown("""
@@ -94,12 +99,13 @@ if uploaded_csv is not None:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 tmp.write(pdf.read())
                 pdf_path = tmp.name
-            has_issue, summary = analyze_pdf_with_summary(pdf_path)
-            pdf_results[pdf.name] = {"有無": has_issue, "概要": summary}
+            has_issue, summary, status = analyze_pdf_with_details(pdf_path)
+            pdf_results[pdf.name] = {"有無": has_issue, "概要": summary, "是正状況": status}
 
     # CSVに追加
     tickets["指摘有無"] = tickets["対象ファイル"].map(lambda x: pdf_results.get(x, {}).get("有無", "不明"))
     tickets["指摘内容"] = tickets["対象ファイル"].map(lambda x: pdf_results.get(x, {}).get("概要", ""))
+    tickets["是正状況"] = tickets["対象ファイル"].map(lambda x: pdf_results.get(x, {}).get("是正状況", "不明"))
 
     # ===== サマリーカード =====
     col1, col2, col3, col4 = st.columns(4)
@@ -120,7 +126,7 @@ if uploaded_csv is not None:
             return ["background-color: #fff3cd"] * len(row)
         return [""] * len(row)
 
-    styled_df = tickets[["日付","担当会社","対象ファイル","指摘有無","指摘内容","是正状況"]].style.apply(highlight, axis=1)
+    styled_df = tickets[["日付", "担当会社", "対象ファイル", "指摘有無", "指摘内容", "是正状況"]].style.apply(highlight, axis=1)
     st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
     # ===== HTMLダウンロード =====
