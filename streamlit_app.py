@@ -5,17 +5,16 @@ import pdfplumber
 from anthropic import Anthropic
 import tempfile
 
-# ====== UIでAPIキー入力 ======
+# ===== サイドバーで APIキー入力 =====
 st.sidebar.header("🔑 API設定")
 api_key = st.sidebar.text_input("Anthropic API Key", type="password")
 
 if "api_key" not in st.session_state:
     st.session_state["api_key"] = None
-
 if api_key:
     st.session_state["api_key"] = api_key
 
-# ====== Claude呼び出し関数 ======
+# ===== Claude呼び出し関数 =====
 def summarize_with_claude(text, title="報告要約"):
     if not st.session_state["api_key"]:
         return "⚠️ APIキーが入力されていません。"
@@ -38,71 +37,74 @@ def summarize_with_claude(text, title="報告要約"):
     except Exception as e:
         return f"APIエラー: {e}"
 
-# ====== データ読込 ======
-tickets = pd.read_csv("operation_tickets.csv")
+# ===== ファイルアップロード =====
+st.title("📊 グリーンオーク茅場町ビル 月次報告書")
 
-pdf_files = [
-    "7月度グリーンオーク茅場町ビル保守点検報告書.pdf",
-    "GO茅場町_作業報告書_設備巡回点検_20250718_指摘有.pdf"
-]
+uploaded_csv = st.file_uploader("📂 点検チケットCSVをアップロード", type="csv")
+uploaded_pdfs = st.file_uploader("📂 PDF報告書をアップロード（複数可）", type="pdf", accept_multiple_files=True)
 
-def extract_pdf_text(pdf_path):
-    text = ""
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            text += page.extract_text() + "\n"
-    return text
+if uploaded_csv is not None:
+    tickets = pd.read_csv(uploaded_csv)
+    
+    # ---- サマリー表示 ----
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("総作業件数", len(tickets))
+        st.metric("指摘件数", (tickets["status"].str.contains("指摘")).sum())
+        st.metric("指摘率", f"{(tickets['status'].str.contains('指摘').mean()*100):.1f}%")
+    with col2:
+        fig = px.pie(
+            tickets,
+            names=tickets["status"].apply(lambda x: "指摘有" if "指摘" in str(x) else "指摘無"),
+            title="指摘有無の割合"
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-pdf_texts = {f: extract_pdf_text(f) for f in pdf_files}
+    st.subheader("点検チケット一覧")
+    st.dataframe(tickets)
 
-# ====== Streamlit画面 ======
-st.title("グリーンオーク茅場町ビル 月次報告書")
+else:
+    st.warning("⚠️ CSVファイルをアップロードしてください")
+    st.stop()
 
-# 指標
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("総作業件数", len(tickets))
-    st.metric("指摘件数", (tickets["status"].str.contains("指摘")).sum())
-    st.metric("指摘率", f"{(tickets['status'].str.contains('指摘').mean()*100):.1f}%")
+# ===== PDF解析 =====
+if uploaded_pdfs:
+    st.subheader("報告書要約（Claude生成）")
+    for pdf in uploaded_pdfs:
+        text = ""
+        with pdfplumber.open(pdf) as pdf_file:
+            for page in pdf_file.pages:
+                text += page.extract_text() + "\n"
+        summary = summarize_with_claude(text)
+        st.markdown(f"### {pdf.name}")
+        st.write(summary)
 
-with col2:
-    fig = px.pie(
-        tickets,
-        names=tickets["status"].apply(lambda x: "指摘有" if "指摘" in str(x) else "指摘無"),
-        title="指摘有無の割合"
-    )
-    st.plotly_chart(fig, use_container_width=True)
+# ===== HTMLダウンロード =====
+if uploaded_csv is not None:
+    html_content = f"""
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body>
+    <h1>グリーンオーク茅場町ビル 月次報告書</h1>
+    <p>総作業件数: {len(tickets)}</p>
+    <p>指摘件数: {(tickets["status"].str.contains("指摘")).sum()}</p>
+    <p>指摘率: {(tickets['status'].str.contains('指摘').mean()*100):.1f}%</p>
+    <h2>報告書要約</h2>
+    """
 
-# チケット一覧
-st.subheader("点検チケット一覧")
-st.dataframe(tickets[["date", "task_name", "担当者", "status"]])
+    if uploaded_pdfs:
+        for pdf in uploaded_pdfs:
+            text = ""
+            with pdfplumber.open(pdf) as pdf_file:
+                for page in pdf_file.pages:
+                    text += page.extract_text() + "\n"
+            html_content += f"<h3>{pdf.name}</h3><p>{summarize_with_claude(text)}</p>"
 
-# Claude要約
-st.subheader("報告書要約（Claude生成）")
-for fname, text in pdf_texts.items():
-    st.markdown(f"### {fname}")
-    summary = summarize_with_claude(text)
-    st.write(summary)
+    html_content += "</body></html>"
 
-# ====== HTML出力 ======
-html_content = f"""
-<html>
-<head><meta charset="utf-8"></head>
-<body>
-<h1>グリーンオーク茅場町ビル 月次報告書</h1>
-<p>総作業件数: {len(tickets)}</p>
-<p>指摘件数: {(tickets["status"].str.contains("指摘")).sum()}</p>
-<p>指摘率: {(tickets['status'].str.contains('指摘').mean()*100):.1f}%</p>
-<h2>報告書要約</h2>
-"""
-for fname, text in pdf_texts.items():
-    html_content += f"<h3>{fname}</h3><p>{summarize_with_claude(text)}</p>"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as f:
+        f.write(html_content.encode("utf-8"))
+        tmpfile = f.name
 
-html_content += "</body></html>"
-
-with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as f:
-    f.write(html_content.encode("utf-8"))
-    tmpfile = f.name
-
-with open(tmpfile, "rb") as f:
-    st.download_button("📥 HTMLダウンロード", f, file_name="monthly_report.html")
+    with open(tmpfile, "rb") as f:
+        st.download_button("📥 HTMLダウンロード", f, file_name="monthly_report.html")
