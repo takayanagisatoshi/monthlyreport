@@ -457,8 +457,30 @@ def main():
         text_data = []
         
         if analysis_option == "PDFアップロード" and PDF_AVAILABLE:
-            pdf_files = st.file_uploader("PDFファイル", type=['pdf'], accept_multiple_files=True)
+            pdf_files = st.file_uploader(
+                "PDFファイル（最大10件）", 
+                type=['pdf'], 
+                accept_multiple_files=True,
+                help="一度に処理できるPDFファイルは最大10件までです"
+            )
+            
             if pdf_files:
+                # ファイル数制限チェック
+                if len(pdf_files) > 10:
+                    st.error(f"ファイル数が上限を超えています。選択されたファイル: {len(pdf_files)}件 / 上限: 10件")
+                    st.info("10件以下になるようにファイルを選択し直してください。")
+                    pdf_files = pdf_files[:10]  # 最初の10件のみ使用
+                    st.warning("最初の10件のみ処理します。")
+                
+                st.info(f"選択されたファイル: {len(pdf_files)}件")
+                
+                # ファイル一覧表示
+                with st.expander("選択ファイル一覧"):
+                    for i, pdf_file in enumerate(pdf_files, 1):
+                        file_size = len(pdf_file.getvalue()) / (1024 * 1024)  # MB
+                        st.write(f"{i}. {pdf_file.name} ({file_size:.1f}MB)")
+                
+                # テキスト抽出処理
                 for pdf_file in pdf_files:
                     text = extract_text_from_pdf_safe(pdf_file)
                     if text:
