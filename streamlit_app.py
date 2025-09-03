@@ -38,7 +38,7 @@ def analyze_pdf_with_details(pdf_path):
 {text[:6000]}
 """
     resp = client.messages.create(
-        model="claude-3-sonnet-20240219",  # ← sonnetを利用
+        model="claude-3-7-sonnet-20250219",  # ← sonnetを利用
         max_tokens=500,
         messages=[{"role": "user", "content": prompt}]
     )
