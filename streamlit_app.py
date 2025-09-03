@@ -8,22 +8,20 @@ uploaded_csv = st.file_uploader("📂 点検チケットCSVをアップロード
 uploaded_pdfs = st.file_uploader("📂 PDF報告書をアップロード（複数可）", type="pdf", accept_multiple_files=True)
 
 # ===== 固定のサンプルHTMLファイル =====
-demo_path = "file:///C:/Users/%E9%AB%98%E6%9F%B3%E6%99%BA/Downloads/building_management_report_simple.html"
+demo_path = "building_management_report_simple.html"
 
 # ===== アップロードがあったら「生成した風」に見せる =====
-if uploaded_csv or uploaded_pdfs:
-    st.success("✅ レポートを作成しました！")
+if os.path.exists(demo_path):
+    with open(demo_path, "r", encoding="utf-8") as f:
+        html_content = f.read()
 
-    # リンクを表示
+    # ダウンロード風リンク
     st.markdown(
         f"[📂 月次レポートをダウンロード]({demo_path})",
         unsafe_allow_html=True
     )
 
-    # Streamlit内に埋め込み表示
-    if os.path.exists(demo_path):
-        with open(demo_path, "r", encoding="utf-8") as f:
-            html_content = f.read()
-        st.components.v1.html(html_content, height=800, scrolling=True)
-    else:
-        st.error("⚠️ サンプルHTMLが見つかりません。パスを確認してください。")
+    # 埋め込み表示
+    st.components.v1.html(html_content, height=800, scrolling=True)
+else:
+    st.error("⚠️ サンプルHTMLが見つかりません。")
