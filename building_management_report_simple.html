@@ -1,1 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年7月度 グリーンオーク茅場町 月次業務報告レポート</title>
+    <style>
+        body {
+            font-family: 'Yu Gothic', 'Meiryo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            font-size: 12px;
+        }
+        .header {
+            background-color: #495057;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+            border-left: 4px solid #dee2e6;
+        }
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #495057;
+        }
+        .card .number {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+            color: #6c757d;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .section-header {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .inspection-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .inspection-table th {
+            background-color: #f8f9fa;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            font-size: 10px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .inspection-table td {
+            padding: 6px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        /* 状態別の色分け - 控えめに */
+        .status-completed { background-color: #f8f9fa; } /* 完了 - 薄グレー */
+        .status-attention { background-color: #fff3cd; } /* 要注意 - 薄黄（少し残す） */
+        .status-urgent { background-color: #f5c6cb; } /* 緊急 - 薄ピンク */
+        .status-unknown { background-color: #e2e3e5; } /* 不明 - グレー */
+        
+        /* 指摘事項の色分け - 控えめに */
+        .issue-high { background-color: #868e96; color: white; } /* 重要指摘 - グレー */
+        .issue-medium { background-color: #e9ecef; color: #495057; } /* 軽微指摘 - 薄グレー */
+        .issue-none { background-color: #f8f9fa; color: #495057; } /* 指摘なし - 薄グレー */
+        
+        .details-cell {
+            text-align: left;
+            max-width: 200px;
+            font-size: 10px;
+            line-height: 1.3;
+        }
+        .contractor-cell {
+            font-weight: bold;
+            min-width: 120px;
+        }
+        .date-cell {
+            min-width: 80px;
+            font-family: monospace;
+        }
+        .progress-cell {
+            min-width: 80px;
+            font-weight: bold;
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>2025年7月度 グリーンオーク茅場町 月次業務報告レポート</h1>
+        <div style="margin-top: 10px; font-size: 14px;">
+            対象期間: 2025年7月1日～7月31日 | 
+            発注者: 双日ライフワン株式会社 | 
+            作成日: 2025年8月
+        </div>
+    </div>
 
+    <div class="summary-cards">
+        <div class="card">
+            <h3>総業務数</h3>
+            <div class="number">8件</div>
+            <div>完了率: 100%</div>
+        </div>
+        <div class="card">
+            <h3>指摘事項あり</h3>
+            <div class="number">3件</div>
+            <div>発生率: 37.5%</div>
+        </div>
+        <div class="card">
+            <h3>指摘事項なし</h3>
+            <div class="number">1件</div>
+            <div>良好率: 12.5%</div>
+        </div>
+        <div class="card">
+            <h3>担当業者数</h3>
+            <div class="number">3社</div>
+            <div>専門業者体制</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">★ 法定点検・定期点検実施状況</div>
+        <table class="inspection-table">
+            <thead>
+                <tr>
+                    <th rowspan="2">NO</th>
+                    <th rowspan="2">点検項目</th>
+                    <th rowspan="2">実施日</th>
+                    <th rowspan="2">実施頻度</th>
+                    <th rowspan="2">次回予定</th>
+                    <th rowspan="2">担当会社</th>
+                    <th rowspan="2">対象ファイル</th>
+                    <th rowspan="2">指摘<br>有無</th>
+                    <th rowspan="2">指摘内容</th>
+                    <th rowspan="2">進捗状況</th>
+                    <th rowspan="2">是正完了日</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="status-completed">
+                    <td>1</td>
+                    <td>自家用電気工作物年次点検</td>
+                    <td class="date-cell">2025/7/27</td>
+                    <td>1回/1年</td>
+                    <td class="date-cell">2026/7/*</td>
+                    <td class="contractor-cell">キュービクルメンテ協会</td>
+                    <td class="details-cell">グリーンオーク　茅場町　年次.pdf</td>
+                    <td class="issue-none">無</td>
+                    <td class="details-cell">全測定値基準内、絶縁抵抗良好</td>
+                    <td class="progress-cell status-completed">完了</td>
+                    <td class="date-cell">2025/8/5</td>
+                </tr>
+                <tr class="status-completed">
+                    <td>2</td>
+                    <td>自家用電気工作物月次点検</td>
+                    <td class="date-cell">2025/7/12</td>
+                    <td>1回/1月</td>
+                    <td class="date-cell">2025/8/*</td>
+                    <td class="contractor-cell">キュービクルメンテ協会</td>
+                    <td class="details-cell">グリーンオーク　茅場町　月次.pdf</td>
+                    <td class="issue-none">無</td>
+                    <td class="details-cell">電気設備正常、異常なし</td>
+                    <td class="progress-cell status-completed">完了</td>
+                    <td class="date-cell">2025/7/28</td>
+                </tr>
+                <tr class="status-urgent">
+                    <td>3</td>
+                    <td>建築設備定期検査</td>
+                    <td class="date-cell">2025/7/18</td>
+                    <td>1回/1年</td>
+                    <td class="date-cell">2026/7/*</td>
+                    <td class="contractor-cell">株式会社ハリマビステム</td>
+                    <td class="details-cell">GO茅場町₋建築設備定期検査(届出前)₋20250718₋指摘有.pdf</td>
+                    <td class="issue-high">有</td>
+                    <td class="details-cell">法定検査による建築基準法関連指摘事項</td>
+                    <td class="progress-cell status-attention">対応検討中</td>
+                    <td class="date-cell">-</td>
+                </tr>
+                <tr class="status-urgent">
+                    <td>4</td>
+                    <td>設備巡回点検</td>
+                    <td class="date-cell">2025/7/18</td>
+                    <td>1回/1月</td>
+                    <td class="date-cell">2025/8/*</td>
+                    <td class="contractor-cell">株式会社ハリマビステム</td>
+                    <td class="details-cell">GO茅場町_作業報告書_設備巡回点検_20250718_指摘有.pdf</td>
+                    <td class="issue-high">有</td>
+                    <td class="details-cell">照明タイマー不良、シャッター蓋破損、鍵破損、トイレ設備不良</td>
+                    <td class="progress-cell status-urgent">緊急対応要</td>
+                    <td class="date-cell">対応中</td>
+                </tr>
+                <tr class="status-attention">
+                    <td>5</td>
+                    <td>空気環境測定</td>
+                    <td class="date-cell">2025/7/3</td>
+                    <td>1回/2月</td>
+                    <td class="date-cell">2025/9/*</td>
+                    <td class="contractor-cell">株式会社ハリマビステム</td>
+                    <td class="details-cell">GO茅場町_作業報告書_空気環境測定_20250703_指摘有 (1).pdf</td>
+                    <td class="issue-medium">有</td>
+                    <td class="details-cell">EVホールで温度基準値超過（2箇所）</td>
+                    <td class="progress-cell status-attention">経過観察</td>
+                    <td class="date-cell">-</td>
+                </tr>
+                <tr class="status-completed">
+                    <td>6</td>
+                    <td>害虫防除</td>
+                    <td class="date-cell">2025/7/1</td>
+                    <td>1回/1月</td>
+                    <td class="date-cell">2025/8/*</td>
+                    <td class="contractor-cell">株式会社ハリマビステム</td>
+                    <td class="details-cell">GO茅場町_作業報告書_害虫防除作業_20250701_指摘無.pdf</td>
+                    <td class="issue-none">無</td>
+                    <td class="details-cell">全館で害虫発生なし、環境良好</td>
+                    <td class="progress-cell status-completed">完了</td>
+                    <td class="date-cell">2025/8/4</td>
+                </tr>
+                <tr class="status-unknown">
+                    <td>7</td>
+                    <td>機械式駐車場保守点検</td>
+                    <td class="date-cell">2025/7/25</td>
+                    <td>1回/1月</td>
+                    <td class="date-cell">2025/8/*</td>
+                    <td class="contractor-cell">IHI運搬機械株式会社</td>
+                    <td class="details-cell">グリーンオーク　茅場町(5月分).pdf</td>
+                    <td class="issue-medium">有</td>
+                    <td class="details-cell">主務チェーン劣化兆候、電装部品劣化兆候（C評価）</td>
+                    <td class="progress-cell status-attention">計画対応中</td>
+                    <td class="date-cell">予定中</td>
+                </tr>
+                <tr class="status-completed">
+                    <td>8</td>
+                    <td>水光熱検針</td>
+                    <td class="date-cell">2025/7/31</td>
+                    <td>1回/1月</td>
+                    <td class="date-cell">2025/8/*</td>
+                    <td class="contractor-cell">株式会社ハリマビステム</td>
+                    <td class="details-cell">7月度グリーンオーク茅場町ビル保守点検報告書.pdf</td>
+                    <td class="issue-none">無</td>
+                    <td class="details-cell">使用量測定完了、異常なし</td>
+                    <td class="progress-cell status-completed">完了</td>
+                    <td class="date-cell">2025/7/31</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-header">★ 緊急対応事項・優先対応事項</div>
+        <table class="inspection-table">
+            <thead>
+                <tr>
+                    <th>優先度</th>
+                    <th>対象業務</th>
+                    <th>指摘事項</th>
+                    <th>影響度</th>
+                    <th>対応期限</th>
+                    <th>対応状況</th>
+                    <th>備考</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="status-urgent">
+                    <td class="issue-high">緊急</td>
+                    <td>設備巡回点検</td>
+                    <td class="details-cell">1L-1電灯盤照明タイマー動作不良</td>
+                    <td class="issue-high">安全性</td>
+                    <td class="date-cell">1週間以内</td>
+                    <td class="progress-cell status-urgent">対応中</td>
+                    <td class="details-cell">夜間照明に影響、安全確保のため最優先</td>
+                </tr>
+                <tr class="status-urgent">
+                    <td class="issue-high">緊急</td>
+                    <td>設備巡回点検</td>
+                    <td class="details-cell">駐車場シャッターボックス蓋破損</td>
+                    <td class="issue-medium">利便性</td>
+                    <td class="date-cell">2週間以内</td>
+                    <td class="progress-cell status-attention">検討中</td>
+                    <td class="details-cell">1箇所蓋歪み、1箇所蓋紛失</td>
+                </tr>
+                <tr class="status-attention">
+                    <td class="issue-medium">短期</td>
+                    <td>設備巡回点検</td>
+                    <td class="details-cell">屋上階段扉鍵破損</td>
+                    <td class="issue-medium">セキュリティ</td>
+                    <td class="date-cell">1ヶ月以内</td>
+                    <td class="progress-cell status-attention">計画中</td>
+                    <td class="details-cell">針金による仮処置済み</td>
+                </tr>
+                <tr class="status-attention">
+                    <td class="issue-medium">中期</td>
+                    <td>機械式駐車場</td>
+                    <td class="details-cell">主務チェーン・電装部品劣化</td>
+                    <td class="issue-medium">機能性</td>
+                    <td class="date-cell">3ヶ月以内</td>
+                    <td class="progress-cell status-attention">計画策定中</td>
+                    <td class="details-cell">C評価、交換工事予定</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="legend">
+        <h3>凡例・状態表示</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-color status-completed"></div>
+                <span>完了・良好（指摘なし）</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-attention"></div>
+                <span>要注意・対応検討中</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-urgent"></div>
+                <span>緊急対応要・重要指摘</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color status-unknown"></div>
+                <span>状況確認要・詳細分析要</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color issue-high"></div>
+                <span>重要指摘事項</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color issue-medium"></div>
+                <span>軽微指摘事項</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color issue-none"></div>
+                <span>指摘事項なし</span>
+            </div>
+        </div>
+        <div style="margin-top: 15px; font-size: 11px; color: #666;">
+            本レポートは業務チケットデータと各業者提出報告書を統合分析して作成されています。<br>
+            ファイル紐付けによる詳細トレーサビリティを確保し、リスク評価の精度を向上させています。
+        </div>
+    </div>
+
+</body>
+</html>
