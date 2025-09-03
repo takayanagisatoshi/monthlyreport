@@ -8,7 +8,7 @@ uploaded_csv = st.file_uploader("📂 点検チケットCSVをアップロード
 uploaded_pdfs = st.file_uploader("📂 PDF報告書をアップロード（複数可）", type="pdf", accept_multiple_files=True)
 
 # ===== 固定のサンプルHTMLファイル =====
-demo_path = "building_management_report_simple.html"
+demo_path = "monthlyreport/building_management_report_simple.html"
 
 # ===== アップロードがあったら「生成した風」に見せる =====
 if os.path.exists(demo_path):
